@@ -1,6 +1,7 @@
 *.pyc
 *.pdf
 *.xcf
+tests
 doc/reference/tamkin-driver.rst
 doctrees
 doc/_build

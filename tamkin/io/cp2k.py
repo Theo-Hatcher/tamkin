@@ -67,7 +67,7 @@ def load_molecule_cp2k(fn_sp, fn_freq, multiplicity=1, is_periodic=True):
     # auxiliary routine to read atoms
     def atom_helper(f):
         # skip some lines
-        for i in range(3):
+        for i in range(2):
             f.readline()
         # read the atom lines until an empty line is encountered
         numbers = []
@@ -77,7 +77,7 @@ def load_molecule_cp2k(fn_sp, fn_freq, multiplicity=1, is_periodic=True):
             line = f.readline()
             if len(line.strip()) == 0:
                 break
-            symbol = line[14:19].strip()[:2]
+            symbol = line.split()[2]
             atom = periodic[symbol]
             if atom is None:
                 symbol = symbol[:1]
@@ -86,7 +86,8 @@ def load_molecule_cp2k(fn_sp, fn_freq, multiplicity=1, is_periodic=True):
                 numbers.append(0)
             else:
                 numbers.append(atom.number)
-            coordinates.append([float(line[22:33]), float(line[34:45]), float(line[46:57])])
+            coords = [float(coord) for coord in line.split()[4:7]]
+            coordinates.append(coords)
             masses.append(float(line[72:]))
 
         numbers = np.array(numbers)
