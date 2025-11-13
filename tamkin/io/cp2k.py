@@ -114,7 +114,6 @@ def load_molecule_cp2k(fn_sp, fn_freq, multiplicity=1, is_periodic=True):
                 tmp.append([float(words[offset]), float(words[offset+1]), float(words[offset+2])])
             except ValueError:
                 break
-        exit()
         return -np.array(tmp) # force to gradient
 
     # go through the single point file: energy and gradient
