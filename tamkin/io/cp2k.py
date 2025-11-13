@@ -66,9 +66,9 @@ def load_molecule_cp2k(fn_sp, fn_freq, multiplicity=1, is_periodic=True):
     """
     # auxiliary routine to read atoms
     def atom_helper(f):
-        # skip some lines
-        for i in range(2):
-            f.readline()
+        # skip empty lines before coordinates start
+        while len(f.readline().strip()) == 0:
+            continue
         # read the atom lines until an empty line is encountered
         numbers = []
         coordinates = []
@@ -88,7 +88,7 @@ def load_molecule_cp2k(fn_sp, fn_freq, multiplicity=1, is_periodic=True):
                 numbers.append(atom.number)
             coords = [float(coord) for coord in line.split()[4:7]]
             coordinates.append(coords)
-            masses.append(float(line[72:]))
+            masses.append(float(line.split()[8]))
 
         numbers = np.array(numbers)
         coordinates = np.array(coordinates)*angstrom
@@ -114,6 +114,7 @@ def load_molecule_cp2k(fn_sp, fn_freq, multiplicity=1, is_periodic=True):
                 tmp.append([float(words[offset]), float(words[offset+1]), float(words[offset+2])])
             except ValueError:
                 break
+        exit()
         return -np.array(tmp) # force to gradient
 
     # go through the single point file: energy and gradient
