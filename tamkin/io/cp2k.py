@@ -103,8 +103,10 @@ def load_molecule_cp2k(fn_sp, fn_freq, multiplicity=1, is_periodic=True):
             f.readline()
         # Read the actual forces
         tmp = []
+        #print(skip)
         while True:
             line = f.readline()
+            #print(line)
             if line == "\n":
                 break
             if line == "":
@@ -114,7 +116,7 @@ def load_molecule_cp2k(fn_sp, fn_freq, multiplicity=1, is_periodic=True):
                 tmp.append([float(words[offset]), float(words[offset+1]), float(words[offset+2])])
             except ValueError:
                 break
-        return -np.array(tmp) # force to gradient
+        return -np.array(tmp[:]) # force to gradient # needs to be [:-1] for old 
 
     # go through the single point file: energy and gradient
     energy = None
@@ -129,7 +131,9 @@ def load_molecule_cp2k(fn_sp, fn_freq, multiplicity=1, is_periodic=True):
             elif line.startswith(" MODULE") and "ATOMIC COORDINATES" in line:
                 numbers, coordinates, masses = atom_helper(f)
             elif line.startswith(" FORCES|"):
-                gradient = force_helper(f, 0, 1)
+                #HERE
+                gradient = force_helper(f, 1, 2)
+                #gradient = force_helper(f, 0, 1) # ORIGINAL
                 break
             elif line.startswith(' ATOMIC FORCES in [a.u.]'):
                 gradient = force_helper(f, 2, 3)
@@ -149,6 +153,7 @@ def load_molecule_cp2k(fn_sp, fn_freq, multiplicity=1, is_periodic=True):
         unit_cell = UnitCell(vectors*angstrom)
 
         free_indices = _load_free_low(f)
+        print(free_indices)
         if len(free_indices) > 0:
             total_size = coordinates.size
             free_size = len(free_indices)
@@ -162,9 +167,14 @@ def load_molecule_cp2k(fn_sp, fn_freq, multiplicity=1, is_periodic=True):
                     line = next(f)
                     words = line.split()
                     for i1 in range(num_cols):
+                        #print(float(words[i1 + 2]))
                         hessian[free_indices[i2 + i1], free_indices[j]] = \
                             float(words[i1 + 2])
+                        #print(free_indices[i2+i1], free_indices[j])
                 i2 += num_cols
+            print("heelo",hessian)
+            #exit()
+
         else:
             raise IOError("Could not read hessian from freq file.")
 
@@ -176,6 +186,7 @@ def load_molecule_cp2k(fn_sp, fn_freq, multiplicity=1, is_periodic=True):
     hessian *= conv
     hessian *= conv.reshape((-1,1))
 
+    print(gradient)
     return Molecule(
         numbers, coordinates, masses, energy, gradient,
         hessian, multiplicity, 0, is_periodic, unit_cell=unit_cell
@@ -202,6 +213,7 @@ def _load_free_low(f):
     for line in f:
         if line.startswith(" VIB| REPLICA Nr."):
             words = line.split()
+            print(words)
             if words[-2] == '+':
                 free_index = 3*(int(words[-5])-1)
                 if words[-3] == 'Y':
