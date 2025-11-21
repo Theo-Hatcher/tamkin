@@ -109,12 +109,14 @@ def load_molecule_cp2k(fn_sp, fn_freq, multiplicity=1, is_periodic=True):
                 break
             if line == "":
                 raise IOError("End of file while reading gradient (forces).")
+            if "sum" in [word.lower() for word in line.split()]:
+                break
             words = line.split()
             try:
                 tmp.append([float(words[offset]), float(words[offset+1]), float(words[offset+2])])
             except ValueError:
                 break
-        return -np.array(tmp) # force to gradient
+        return -np.array(tmp) 
 
     # go through the single point file: energy and gradient
     energy = None
@@ -128,8 +130,11 @@ def load_molecule_cp2k(fn_sp, fn_freq, multiplicity=1, is_periodic=True):
                 energy = float(line[58:])
             elif line.startswith(" MODULE") and "ATOMIC COORDINATES" in line:
                 numbers, coordinates, masses = atom_helper(f)
+            elif line.startswith(" FORCES| Atomic forces [hartree/bohr]"):
+                gradient = force_helper(f, 1, 2)
+                break
             elif line.startswith(" FORCES|"):
-                gradient = force_helper(f, 0, 1)
+                gradient = force_helper(f, 0, 1) # ORIGINAL
                 break
             elif line.startswith(' ATOMIC FORCES in [a.u.]'):
                 gradient = force_helper(f, 2, 3)
@@ -165,6 +170,7 @@ def load_molecule_cp2k(fn_sp, fn_freq, multiplicity=1, is_periodic=True):
                         hessian[free_indices[i2 + i1], free_indices[j]] = \
                             float(words[i1 + 2])
                 i2 += num_cols
+
         else:
             raise IOError("Could not read hessian from freq file.")
 

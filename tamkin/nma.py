@@ -160,6 +160,7 @@ class NMA(object):
             hessian_small_mw = treatment.hessian_small
         else:
             hessian_small_mw = treatment.mass_matrix_small.get_weighted_hessian(treatment.hessian_small)
+            #print(hessian_small_mw)
         del treatment.hessian_small # save memory
 
         if hessian_small_mw.size == 0:
@@ -177,6 +178,8 @@ class NMA(object):
             self.freqs = np.sqrt(abs(evals))/(2*np.pi)
             # turn imaginary frequencies into negative frequencies
             self.freqs *= (evals > 0)*2-1
+            #print(self.freqs)
+            #exit()
 
             if do_modes:
                 # At this point the transform object transforms unweighted reduced
