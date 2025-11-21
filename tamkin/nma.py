@@ -136,9 +136,7 @@ class NMA(object):
             treatment = Full()
 
         # the treatment object will store the results as attributes
-        print(molecule, do_modes)
         treatment(molecule, do_modes)
-        print(treatment)
         # treatment.hessian_small:
         #    the Hessian in reduced coordinates
         # treatment.mass_matrix_small:
